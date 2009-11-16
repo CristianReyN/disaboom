@@ -15,7 +15,8 @@ Option Explicit
   
 Const CLASS_NAME As String = "clsDisaBoom"
 
-Public Function ExecFeed(ByVal clsUpload As clsCommonFeedMembers, ByVal ADORS As ADODB.Recordset, ByVal clsGetFieldVals As clsGetDBData, ByVal strFileName As String, ByVal intClientID As Integer) As String
+'Public Function ExecFeed(ByVal clsUpload As clsCommonFeedMembers, ByVal ADORS As ADODB.Recordset, ByVal clsGetFieldVals As clsGetDBData, ByVal strFileName As String, ByVal intClientID As Integer) As String
+Public Function ExecFeed(ByVal clsUpload As Object, ByVal ADORS As ADODB.Recordset, ByVal clsGetFieldVals As Object, ByVal strFileName As String, ByVal intClientID As Integer) As String
         'Variables
         
         'contact_type_id  description
@@ -31,7 +32,8 @@ Public Function ExecFeed(ByVal clsUpload As clsCommonFeedMembers, ByVal ADORS As
         Const DELIMITER = ","
         Const COUNTRY = "USA"
         Dim objTextFile As TextStream
-        Dim objString As Auto_Feed_Members.clsStringBuilder
+        'Dim objString As Auto_Feed_Members.clsStringBuilder
+        Dim objString As Object
         Dim objfSys As FileSystemObject
         Dim lngReqEmediaID As Long
         'Required Fields
@@ -77,7 +79,8 @@ Public Function ExecFeed(ByVal clsUpload As clsCommonFeedMembers, ByVal ADORS As
       '40620     strEmediaID = ADORS.Fields("Emedia_ID").Value & ""
 
 3380      Set objTextFile = clsUpload.OpenTextFile(objfSys, strFileName, ForAppending, True)
-3390      Set objString = New Auto_Feed_Members.clsStringBuilder
+'3390      Set objString = New Auto_Feed_Members.clsStringBuilder
+3390      Set objString = CreateObject("Auto_Feed_Members.clsStringBuilder")
           objString.Supports_Unicode = clsUpload.Supports_Unicode
 
 '3391      strJobHireFrom = clsUpload.GetXMLSetting("CASE_MANAGEMENT", "E_" & clsUpload.EmediaID & "_JOB_FROM", "", "", False)
@@ -88,10 +91,10 @@ Public Function ExecFeed(ByVal clsUpload As clsCommonFeedMembers, ByVal ADORS As
 3420        Do While Not .EOF
               '*********************************************************************************************************
               'required fields
-3421          strUDLFile = .Fields("UDLFile").value
-              strJobAction = .Fields("JobAction").value
+3421          strUDLFile = .Fields("UDLFile").Value
+              strJobAction = .Fields("JobAction").Value
               
-              intJobAction = IIf(((.Fields("JobAction").value = "A") Or (.Fields("JobAction").value = "U")), 0, 1)
+              intJobAction = IIf(((.Fields("JobAction").Value = "A") Or (.Fields("JobAction").Value = "U")), 0, 1)
               If strJobAction = "A" Then
                     strJobAction = "ADD"
               ElseIf strJobAction = "U" Then
@@ -100,37 +103,37 @@ Public Function ExecFeed(ByVal clsUpload As clsCommonFeedMembers, ByVal ADORS As
                     strJobAction = "DELETE"
               End If
               
-3422          lngReqID = .Fields("requisition_id").value
+3422          lngReqID = .Fields("requisition_id").Value
 '3430          lngReqEmediaID = ADORS.Fields("req_emediaid").value
-3430          lngReqEmediaID = .Fields("req_emediaid").value
-              strListing = .Fields("listing").value & ""
-3440          strJobTitle = (.Fields("title").value & "")
+3430          lngReqEmediaID = .Fields("req_emediaid").Value
+              strListing = .Fields("listing").Value & ""
+3440          strJobTitle = (.Fields("title").Value & "")
 
 '3460          strHeader = (.Fields("HEADER").value & "")
 '3470          strFooter = (.Fields("FOOTER").value & "")
 '3480          strDuties = (.Fields("DUTIES").value & "")
 '3490          strRequirements = (.Fields("REQUIREMENTS").value & "")
 
-3530          strContactEmail = (.Fields("email_address").value & "")
+3530          strContactEmail = (.Fields("email_address").Value & "")
 '3540          strCompanyName = ADORS.Fields("listing").value
-3540          strCompanyName = .Fields("listing").value
-3560          strCity = (.Fields("city_name").value & "")
-3570          strState = (.Fields("state_name").value & "")
+3540          strCompanyName = .Fields("listing").Value
+3560          strCity = (.Fields("city_name").Value & "")
+3570          strState = (.Fields("state_name").Value & "")
               'strZipCode = (.Fields("zip_code").value & "")
-              strReqCode = .Fields("requisition_code").value
+              strReqCode = .Fields("requisition_code").Value
               
-              strPostDate = Format((.Fields("postdate").value & ""), DATE_FORMAT)
+              strPostDate = Format((.Fields("postdate").Value & ""), DATE_FORMAT)
                 
               'strCloseDate = Format(.Fields("closedate").value, "DD-MMM-YY")
               'strEndDate = Format(DateAdd("d", CInt(.Fields("duration").value), CDate((.Fields("postdate").value & ""))), date_format)
               
               ' ----------------------------
-                strClosedDate = (.Fields("close_datetime").value & "")
-                strUnpostDate = (.Fields("unpost_date").value & "")
+                strClosedDate = (.Fields("close_datetime").Value & "")
+                strUnpostDate = (.Fields("unpost_date").Value & "")
                 
                 If ((LenB(strClosedDate) = 0) And (LenB(strUnpostDate) = 0)) Then
                   ' Job has not been closed or unposted
-                  strEndDate = Format(DateAdd("d", CInt(.Fields("duration").value), CDate((.Fields("postdate").value & ""))), DATE_FORMAT)
+                  strEndDate = Format(DateAdd("d", CInt(.Fields("duration").Value), CDate((.Fields("postdate").Value & ""))), DATE_FORMAT)
                 ElseIf ((LenB(strClosedDate) > 0) And (LenB(strUnpostDate) > 0)) Then
                   ' Seems job has been closed and unposted, get the earliest date of the two.
                   If (CDate(strClosedDate) < CDate(strUnpostDate)) Then
@@ -184,7 +187,7 @@ Public Function ExecFeed(ByVal clsUpload As clsCommonFeedMembers, ByVal ADORS As
              
               
 3940        With objString
-3950           .CLEAR
+3950           .Clear
                
 3960          If ((clsUpload.OkToDelete = True) And (ADORS.AbsolutePosition = 1)) Then
 3970            .Append clsUpload.FormatFeedString("Action", True, DELIMITER, 0, True, False, False)
@@ -211,7 +214,7 @@ Public Function ExecFeed(ByVal clsUpload As clsCommonFeedMembers, ByVal ADORS As
 4400          .Append clsUpload.FormatFeedString(strListing, True, DELIMITER, 0, True, False, False)
             End With
                 
-4670          objTextFile.WriteLine objString.value
+4670          objTextFile.WriteLine objString.Value
           
 4680          clsGetFieldVals.UpdateHistory lngReqEmediaID, clsUpload.FeedID, strUDLFile, intJobAction
 
